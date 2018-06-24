@@ -21,12 +21,12 @@ class cluscov:
         temp = self.G * self.R
         # (G,R)
         delta = par[:temp].reshape(self.G, self.R)
-        # (R,)
+        # (R-1,)
         alpha[:-1] = par[temp:temp + self.R - 1]
         # sum to zero constraint
         alpha[-1] = -np.sum(alpha)
         temp += self.R - 1
-        # (M,)
+        # (M-1,)
         beta[:-1] = par[temp:temp + self.M - 1]
         # sum to zero constraint
         beta[-1] = -np.sum(beta)
@@ -117,9 +117,9 @@ class cluscov:
         ll = -np.sum(pi_N * log_pi_N)
         return ll
 
-    def EM_step(self, nstarts=10, itermax=500):
+    def EM_step(self, nstarts=100, itermax=500):
         count = 0
-        iter_burn = 2
+        iter_burn = 1
         min_fun = np.inf
         # Burnin
         while count < nstarts:
