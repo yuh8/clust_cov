@@ -26,11 +26,9 @@ class cluscov:
         # sum to zero constraint
         alpha[-1] = -np.sum(alpha)
         temp += self.R - 1
-        # (M-1,)
-        beta[:-1] = par[temp:temp + self.M - 1]
-        # sum to zero constraint
-        beta[-1] = -np.sum(beta)
-        temp += self.M - 1
+        # (M,)
+        beta = par[temp:temp + self.M]
+        temp += self.M
         # (K,) ensure monotonicity of mu
         mu = np.zeros(self.K - 1)
         mu[0] = par[temp]
@@ -62,7 +60,7 @@ class cluscov:
 
     @staticmethod
     def log_sum_exp(x):
-        k = -100
+        k = -7
         if len(x.shape) <= 1:
             e = x - np.max(x)
             y = np.exp(e) / sum(np.exp(e))
@@ -117,13 +115,13 @@ class cluscov:
         ll = -np.sum(pi_N * log_pi_N)
         return ll
 
-    def EM_step(self, nstarts=100, itermax=500):
+    def EM_step(self, nstarts=1, itermax=800):
         count = 0
         iter_burn = 1
         min_fun = np.inf
         # Burnin
         while count < nstarts:
-            par0 = np.random.rand(self.G * self.R + self.R - 1 + self.M - 1 + self.K - 1)
+            par0 = np.random.rand(self.G * self.R + self.R - 1 + self.M + self.K - 1)
             pi0 = np.random.dirichlet(np.ones(self.R) / self.R)
             count1 = 0
             while count1 < iter_burn:

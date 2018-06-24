@@ -25,12 +25,12 @@ class clustcovsimGender:
         beta = np.zeros((2, self.M))
         # beta[0, :-1] = np.random.randint(self.M - 1)
         # beta[1, :-1] = -np.random.rand(self.M - 1)
-        beta[0, :] = np.array([2, 6, 3, 1, -12]) / 10
-        beta[1, :] = np.array([-1, -4, -3, -2, 10]) / 10
+        beta[0, :] = np.array([2, 6, 3, 1, 4]) / 10
+        beta[1, :] = np.array([-1, -4, -3, -2, -5]) / 10
         # alpha = np.random.rand(self.R)
         alpha = np.array([3, 2, -5]) / 10
         # temp = np.random.rand(self.K)
-        mu = np.array([2, 5, 0]) / 10
+        mu = np.array([2, 5]) / 10
         theta = np.zeros(self.K)
         rx = np.zeros(self.N)
         for i in range(self.N):
