@@ -1,10 +1,7 @@
-import numpy as np
-import scipy as sp
-import pandas as pd
 import matplotlib.pyplot as plt
 from clust_cov_sim import clustcovsimGender
 from clust_cov_core import cluscov
-pi = [0.4, 0.1, 0.5]
+pi = [0.1, 0.7, 0.2]
 clust = clustcovsimGender(pi, N=100)
 Data, idx = clust.simData
 # print(Data)

@@ -13,4 +13,4 @@ G = F + K
 H = G.reshape(2, 3, 5, 3)
 print(H.shape)
 print(H)
-print(np.swapaxes(H, 1, 3))
+print(np.array([1, 2]) + A)

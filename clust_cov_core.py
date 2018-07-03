@@ -14,13 +14,13 @@ class cluscov:
         self.G = G
 
     def computeTheta(self, par):
-        # size of par is  G*R + (R-1) + (M-1) + (K-1)
+        # size of par is  G + (R-1) + (M-1) + (K-1)
         # par is flattened for scipy.optimize.minimize
         alpha = np.zeros(self.R)
         beta = np.zeros(self.M)
-        temp = self.G * self.R
+        temp = self.G
         # (G,R)
-        delta = par[:temp].reshape(self.G, self.R)
+        delta = par[:temp].reshape(-1, 1)
         # (R-1,)
         alpha[:-1] = par[temp:temp + self.R - 1]
         # sum to zero constraint
@@ -35,7 +35,7 @@ class cluscov:
         mu[1:] = np.exp(par[temp + 1:])
         mu = np.cumsum(mu)
         # columnize + add + reshape
-        # (G,R) + (R,) = (G,R)
+        # (G,) + (R,) = (G,R)
         eta = delta + alpha
         # (G*R,) + (M,) = (G*R,M)
         eta = eta.reshape(-1, 1) + beta
@@ -45,11 +45,11 @@ class cluscov:
         eta = eta.reshape(-1, 1) + mu
         # reshape to form tensors (G,R,M,K-1)
         eta = eta.reshape(self.G, self.R, self.M, self.K - 1)
-        # padding matrix for diff computation
-        eta = np.insert(eta, 0, 0, axis=-1)
         # logistic function
         logistic_eta = special.expit(eta)
-        # theta_GRMK
+        # padding matrix for diff computation (G,R,M,K)
+        logistic_eta = np.insert(logistic_eta, 0, 0, axis=-1)
+        # theta (G,R,M,K-1)
         theta = np.diff(logistic_eta)
         # sum to one constraint
         temp1 = 1 - np.sum(theta, axis=-1).reshape(self.G, self.R, self.M, 1)
@@ -60,7 +60,7 @@ class cluscov:
 
     @staticmethod
     def log_sum_exp(x):
-        k = -7
+        k = -20
         if len(x.shape) <= 1:
             e = x - np.max(x)
             y = np.exp(e) / sum(np.exp(e))
@@ -87,10 +87,10 @@ class cluscov:
         G = np.arange(1, self.G + 1)
         # (N*M,K) check for each row and column the matching category
         I_NMK = Ytrain == K
+        # (N,M,K)
+        I_NMK = I_NMK.reshape(self.N, self.M, self.K)
         # (N,G) check for each row the matching feature category
         I_NG = x == G
-        # (N,M,K)
-        I_NMK = I_NMK.astype(int).reshape(self.N, self.M, self.K)
         # log_theta is (G,R,M,K)
         log_theta = np.log(theta)
         # (N,G,R)
@@ -115,13 +115,13 @@ class cluscov:
         ll = -np.sum(pi_N * log_pi_N)
         return ll
 
-    def EM_step(self, nstarts=1, itermax=800):
+    def EM_step(self, nstarts=200, itermax=1000):
         count = 0
         iter_burn = 1
         min_fun = np.inf
         # Burnin
         while count < nstarts:
-            par0 = np.random.rand(self.G * self.R + self.R - 1 + self.M + self.K - 1)
+            par0 = np.random.rand(self.G + self.R - 1 + self.M + self.K - 1)
             pi0 = np.random.dirichlet(np.ones(self.R) / self.R)
             count1 = 0
             while count1 < iter_burn:
