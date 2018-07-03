@@ -1,4 +1,5 @@
 .DS_Store
+*.csv
 __pycache__
 *.pyc
 .idea
