@@ -5,12 +5,15 @@ from scipy.optimize import minimize
 
 class cluscov:
     def __init__(self, Ytrain, K, R, G):
+        # Number of categories in each column
         self.K = K
+        # Number of clusters
         self.R = R
         self.Ytrain = Ytrain
         self.N = np.size(Ytrain, axis=0)
         # The last column is the gender
         self.M = np.size(Ytrain, axis=1) - 1
+        # Number of gender categories
         self.G = G
 
     def computeTheta(self, par):
@@ -19,7 +22,7 @@ class cluscov:
         alpha = np.zeros(self.R)
         beta = np.zeros(self.M)
         temp = self.G
-        # (G,R)
+        # (G,1)
         delta = par[:temp].reshape(-1, 1)
         # (R-1,)
         alpha[:-1] = par[temp:temp + self.R - 1]
@@ -35,13 +38,13 @@ class cluscov:
         mu[1:] = np.exp(par[temp + 1:])
         mu = np.cumsum(mu)
         # columnize + add + reshape
-        # (G,) + (R,) = (G,R)
+        # (G,1) + (R,) = (G,R)
         eta = delta + alpha
-        # (G*R,) + (M,) = (G*R,M)
+        # (G*R,1) + (M,) = (G*R,M)
         eta = eta.reshape(-1, 1) + beta
         # (G*R,M) = (G,R,M)
         eta = eta.reshape(self.G, self.R, self.M)
-        # (G*R*M,) + (K-1,) = (G*R*M,K-1)
+        # (G*R*M,1) + (K-1,) = (G*R*M,K-1)
         eta = eta.reshape(-1, 1) + mu
         # reshape to form tensors (G,R,M,K-1)
         eta = eta.reshape(self.G, self.R, self.M, self.K - 1)
@@ -52,6 +55,7 @@ class cluscov:
         # theta (G,R,M,K-1)
         theta = np.diff(logistic_eta)
         # sum to one constraint
+        import pdb; pdb.set_trace()
         temp1 = 1 - np.sum(theta, axis=-1).reshape(self.G, self.R, self.M, 1)
         # append to the last column theta is (G,R,M,K)
         theta = np.append(theta, temp1, axis=-1)
@@ -115,7 +119,7 @@ class cluscov:
         ll = -np.sum(pi_N * log_pi_N)
         return ll
 
-    def EM_step(self, nstarts=200, itermax=1000):
+    def EM_step(self, nstarts=10, itermax=1000):
         count = 0
         iter_burn = 1
         min_fun = np.inf
